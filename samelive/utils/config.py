@@ -20,7 +20,7 @@ class Config(object):
     endpoints_dict = {}
 
     # Cluster options
-    persistant_endpoint = "http://localhost:8082/sparql"
+    persistent_endpoint = "http://localhost:8082/sparql"
 
     computing_endpoints = ["http://localhost:8083/sparql",
                            "http://localhost:8084/sparql"]

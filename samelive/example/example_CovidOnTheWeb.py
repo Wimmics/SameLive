@@ -15,7 +15,7 @@ error_detection = ErrorDetection()
 if __name__ == '__main__':
     setup.setup_vocabulary()
     setup.populate_lodcloud()
-    #setup.populate_void_rkbexplorer()
+    # setup.populate_void_rkbexplorer()
     setup.populate_umakata()
     setup.cleanup_datasets()
     try:

@@ -1,6 +1,6 @@
 # SameLive
 
-This program consist in discovering equivalence links for a given set of URIs dynamically and online with SPARQL queries.
+This program consists in discovering equivalence links for a given set of URIs dynamically and online with SPARQL queries.
 
 ## Setup
 
@@ -33,7 +33,7 @@ By default, the user interface of the triplestore is available at:
 By default, the URL to query the triplestore by code is available at:
 - http://localhost:8082/sparql
 
-You need to have two processes running at the same time (you may want to use the [screen](https://linuxize.com/post/how-to-use-linux-screen/) command): the triplestore and the python code.
+You need to have two processes running at the same time (you may want to use the [screen](https://linuxize.com/post/how-to-use-linux-screen/) command): the triplestore and the Python code.
 
 ##
 
@@ -83,3 +83,6 @@ In the example package, some code is available to show with the public dataset C
 [5] Michel, F., Gandon, F., Ah-Kane, V., Bobasheva, A., Cabrio, E., Corby, O., Gazzotti, R., Giboin, A., Marro, S., Mayer, T., et al.: Covid-on-the-web: Knowledge graph and services to advance covid-19 research. In: International Semantic WebConference. pp. 294–310. Springer (2020).
 
 [6] Yi, Y., Lagniton, P.N., Ye, S., Li, E., Xu, R.H.: Covid-19: what has been learned and to be learned about the novel coronavirus disease. International journal of biological sciences 16(10), 1753 (2020).
+
+## Citation
+Gazzotti, R. and Gandon, F., 2021, October. When owl:sameAs is the Same: Experimenting Online Resolution of Identity with SPARQL queries to Linked Open Data Sources. In the 17th International Conference on Web Information Systems and Technologies.

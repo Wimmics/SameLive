@@ -22,8 +22,8 @@ class Statistics(object):
             self.nb_voted_functional_properties()
             self.nb_incorrect_functional_properties()
             self.nb_not_deferenced_properties()
-            self.nb_not_loaded_RDF_document()
-            self.nb_loaded_RDF_document()
+            self.nb_not_loaded_rdf_document()
+            self.nb_loaded_rdf_document()
 
         except Exception as err:
             traceback.print_tb(err)
@@ -168,7 +168,7 @@ class Statistics(object):
         except Exception as err:
             traceback.print_tb(err)
 
-    def nb_not_loaded_RDF_document(self):
+    def nb_not_loaded_rdf_document(self):
         """
         Computes the number of RDF documents that could not be loaded with a LOAD clause.
         """
@@ -202,7 +202,7 @@ class Statistics(object):
         except Exception as err:
             traceback.print_tb(err)
 
-    def nb_loaded_RDF_document(self):
+    def nb_loaded_rdf_document(self):
         """
         Computes the number of RDF documents that could be loaded with a LOAD clause.
         """

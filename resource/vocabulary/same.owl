@@ -84,13 +84,15 @@
     <rdfs:label>Named graph that contains not deferenced properties after the LOAD clause.</rdfs:label>
   </rdf:Description>
 
-  <rdf:Graph rdf:about="https://ns.inria.fr/same/same.owl#Q-1">
+  <rdf:Description rdf:about="https://ns.inria.fr/same/same.owl#Q-1">
+    <rdf:type rdf:resource="http://www.w3.org/2004/03/trix/rdfg-1Graph"/>
     <rdfs:label>Named graph that contains the same:Rotten resources.</rdfs:label>
-  </rdf:Graph>
+  </rdf:Description>
 
-  <rdf:Graph rdf:about="https://ns.inria.fr/same/same.owl#Q0">
+  <rdf:Description rdf:about="https://ns.inria.fr/same/same.owl#Q0">
+    <rdf:type rdf:resource="http://www.w3.org/2004/03/trix/rdfg-1Graph"/>
     <rdfs:label>Named graph that contains the starting same:Target.</rdfs:label>
-  </rdf:Graph>
+  </rdf:Description>
 
   <owl:DatatypeProperty rdf:about="https://ns.inria.fr/same/same.owl#triplesInGraph">
     <rdfs:domain rdf:resource="http://www.w3.org/2004/03/trix/rdfg-1Graph"/>

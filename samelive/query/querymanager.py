@@ -129,8 +129,9 @@ class Setup(object):
             cg = ConjunctiveGraph()
             results = cg.parse(data=sparql.query().convert().decode('utf-8'), format="application/rdf+xml")
             prefixes = "PREFIX same: <https://ns.inria.fr/same/same.owl#>"
-            #Helper.insert_graph(self.local_endpoint, results, 'same:N', prefixes)
-            Helper.insert_graph(self.local_endpoint, results, '<http://blinded.for.review.org/same/voidStore>', prefixes)
+            # Helper.insert_graph(self.local_endpoint, results, 'same:N', prefixes)
+            Helper.insert_graph(self.local_endpoint, results, '<http://blinded.for.review.org/same/voidStore>',
+                                prefixes)
 
             # Remove dupplicated endpoints
             sparql = SPARQLWrapper(self.local_endpoint)
@@ -171,7 +172,8 @@ class Setup(object):
                 if len(lod_dump[d]["sparql"]) == 0:
                     continue
                 try:
-                    tmp_dataset = [metadata["access_url"] for metadata in lod_dump[d]["other_download"] if metadata["media_type"] == "meta/void"][0]
+                    tmp_dataset = [metadata["access_url"] for metadata in lod_dump[d]["other_download"]
+                                   if metadata["media_type"] == "meta/void"][0]
                 except Exception as err:
                     tmp_dataset = lod_dump[d]["website"]
                     if tmp_dataset is None or len(tmp_dataset) < 5:
@@ -182,8 +184,13 @@ class Setup(object):
                 data.append(" dcterms:title \"" + lod_dump[d]["title"].replace('"', '\\"') + "\" ;")
                 data.append(" void:sparqlEndpoint <" + lod_dump[d]["sparql"][0]["access_url"] + "> .")
 
-            prefixes = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \nPREFIX owl: <http://www.w3.org/2002/07/owl#> \nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \nPREFIX void: <http://rdfs.org/ns/void#> \nPREFIX dcterms: <http://purl.org/dc/terms/> \nPREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#> \nPREFIX same: <https://ns.inria.fr/same/same.owl#>"
-            #Helper.insert_array(self.local_endpoint, data, 'same:N', prefixes)
+            prefixes = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " \
+                       "\nPREFIX owl: <http://www.w3.org/2002/07/owl#> \n" \
+                       "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \nPREFIX void: <http://rdfs.org/ns/void#> \n" \
+                       "PREFIX dcterms: <http://purl.org/dc/terms/> \n" \
+                       "PREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#> " \
+                       "\nPREFIX same: <https://ns.inria.fr/same/same.owl#>"
+            # Helper.insert_array(self.local_endpoint, data, 'same:N', prefixes)
             Helper.insert_array(self.local_endpoint, data, '<http://blinded.for.review.org/same/LODCloud>', prefixes)
 
         except Exception as err:
@@ -200,15 +207,16 @@ class Setup(object):
             umakata_dump = json.loads(response.text)
 
             # TODO transition to Python 3.9
-            datasets_void = ["<" + Helper().removesuffix(Helper().removesuffix(e["endpoint_url"],
-                            "virtuoso/sparql"), "sparql") + ".well-known/void>"
+            datasets_void = ["<" + Helper().removesuffix(Helper().removesuffix(e["endpoint_url"], "virtuoso/sparql"),
+                                                         "sparql") + ".well-known/void>"
                              for e in umakata_dump if e["evaluation"]["void"] is True]
-            datasets_no_void = ["<" + e["description_url"] + ">" for e in umakata_dump if e["evaluation"]["void"] is False]
+            datasets_no_void = ["<" + e["description_url"] + ">" for e in umakata_dump if e["evaluation"]["void"]
+                                is False]
             data = []
             for e in umakata_dump:
                 if e["evaluation"]["void"] is True:
-                    tmp_dataset = Helper().removesuffix(Helper().removesuffix(e["endpoint_url"],
-                                  "virtuoso/sparql"), "sparql") + ".well-known/void"
+                    tmp_dataset = Helper().removesuffix(Helper().removesuffix(e["endpoint_url"], "virtuoso/sparql"),
+                                                        "sparql") + ".well-known/void"
                 if e["evaluation"]["void"] is False:
                     tmp_dataset = e["description_url"]
                 tmp_dataset_status = "<" + tmp_dataset + ".status>"
@@ -220,8 +228,12 @@ class Setup(object):
                 data.append(" ends:status " + tmp_dataset_status + " .")
                 data.append(tmp_dataset_status + " ends:statusIsAvailable {} .".format(e["evaluation"]["alive"]))
                 # ends namespace https://labs.mondeca.com/vocab/endpointStatus/
-            prefixes = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \nPREFIX owl: <http://www.w3.org/2002/07/owl#> \nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \nPREFIX void: <http://rdfs.org/ns/void#> \nPREFIX dcterms: <http://purl.org/dc/terms/> \nPREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#>"
-            #Helper.insert_array(self.local_endpoint, data, 'same:N', prefixes)
+            prefixes = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n" \
+                       "PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" \
+                       "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \n" \
+                       "PREFIX void: <http://rdfs.org/ns/void#> \nPREFIX dcterms: <http://purl.org/dc/terms/> \n" \
+                       "PREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#>"
+            # Helper.insert_array(self.local_endpoint, data, 'same:N', prefixes)
             Helper.insert_array(self.local_endpoint, data, '<http://blinded.for.review.org/same/Yummydata>', prefixes)
 
         except Exception as err:
@@ -387,9 +399,9 @@ class Setup(object):
                     rdfs:label "Named graph that contains asserted owl:InverseFunctionalProperty and owl:FunctionalProperty." .
                     same:PropertiesNotDeferenced a rdfg:Graph ;
                     rdfs:label "Named graph that contains not deferenced properties after the LOAD clause." .
-                    same:Q-1 a rdf:Graph ;
+                    same:Q-1 a rdfg:Graph ;
                     rdfs:label "Named graph that contains the same:Rotten resources." .
-                    same:Q0 a rdf:Graph ;
+                    same:Q0 a rdfg:Graph ;
                     rdfs:label "Named graph that contains the starting same:Target." .
                     same:triplesInGraph a owl:DatatypeProperty ;
                     rdfs:domain rdfg:Graph ;
