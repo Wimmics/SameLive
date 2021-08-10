@@ -85,4 +85,4 @@ In the example package, some code is available to show with the public dataset C
 [6] Yi, Y., Lagniton, P.N., Ye, S., Li, E., Xu, R.H.: Covid-19: what has been learned and to be learned about the novel coronavirus disease. International journal of biological sciences 16(10), 1753 (2020).
 
 ## Citation
-Gazzotti, R. and Gandon, F., 2021, October. When owl:sameAs is the Same: Experimenting Online Resolution of Identity with SPARQL queries to Linked Open Data Sources. In the 17th International Conference on Web Information Systems and Technologies.
+Gazzotti, R. and Gandon, F. When owl:sameAs is the Same: Experimenting Online Resolution of Identity with SPARQL Queries to Linked Open Data Sources. In Proceedings of the 17th International Conference on Web Information Systems and Technologies (WEBIST 2021) [⟨hal-03301330)](https://hal.archives-ouvertes.fr/hal-03301330)

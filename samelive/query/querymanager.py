@@ -130,7 +130,7 @@ class Setup(object):
             results = cg.parse(data=sparql.query().convert().decode('utf-8'), format="application/rdf+xml")
             prefixes = "PREFIX same: <https://ns.inria.fr/same/same.owl#>"
             # Helper.insert_graph(self.local_endpoint, results, 'same:N', prefixes)
-            Helper.insert_graph(self.local_endpoint, results, '<http://blinded.for.review.org/same/voidStore>',
+            Helper.insert_graph(self.local_endpoint, results, '<https://ns.inria.fr/same/same.owl#voidStore>',
                                 prefixes)
 
             # Remove dupplicated endpoints
@@ -191,7 +191,68 @@ class Setup(object):
                        "PREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#> " \
                        "\nPREFIX same: <https://ns.inria.fr/same/same.owl#>"
             # Helper.insert_array(self.local_endpoint, data, 'same:N', prefixes)
-            Helper.insert_array(self.local_endpoint, data, '<http://blinded.for.review.org/same/LODCloud>', prefixes)
+            Helper.insert_array(self.local_endpoint, data, '<https://ns.inria.fr/same/same.owl#LODCloud>', prefixes)
+
+        except Exception as err:
+            traceback.print_tb(err)
+
+    def populate_datahub(self):
+        """
+        Retrieves datasets information on the data of old.datahub.io and populates a triplestore with this data
+        (:label: N5).
+        """
+        # original query from: Buil-Aranda, C., Hogan, A., Umbrich, J., & Vandenbussche, P. Y. (2013, October).
+        # SPARQL web-querying infrastructure: Ready for action?. In International Semantic Web Conference
+        # (pp. 277-293). Springer, Berlin, Heidelberg.
+        # https://old.datahub.io/api/3/search/resource?format=api/sparql&all_fields=1&limit=10000
+        try:
+            headers = {'Accept': 'application/json'}
+            response = requests.get("https://old.datahub.io/api/3/search/resource?format="
+                                    "sparql&all_fields=1&limit=10000", headers=headers)
+            datahub_dump = json.loads(response.text)["results"]
+            data = []
+            for d in datahub_dump:
+                data.append(" <" + d["url"].replace(' ', '') + ".dataset> a void:Dataset ;")
+                data.append(" void:sparqlEndpoint <" + d["url"].replace(' ', '') + "> .")
+            prefixes = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n" \
+                       "PREFIX owl: <http://www.w3.org/2002/07/owl#> \n" \
+                       "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \n" \
+                       "PREFIX void: <http://rdfs.org/ns/void#> \nPREFIX dcterms: <http://purl.org/dc/terms/> \n" \
+                       "PREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#>"
+            Helper.insert_array(self.local_endpoint, data, '<https://ns.inria.fr/same/same.owl#DataHub>', prefixes)
+
+        except Exception as err:
+            traceback.print_tb(err)
+
+    def populate_linkedwiki(self):
+        """
+        Retrieves datasets information on the data of linkedwiki and populates a triplestore with this data
+        (:label: N4).
+        """
+        try:
+            sparql = SPARQLWrapper(self.local_endpoint)
+            sparql.method = 'POST'
+            sparql.setRequestMethod('postdirectly')
+            sparql.setQuery("""
+                PREFIX void: <http://rdfs.org/ns/void#>
+                PREFIX dcterms: <http://purl.org/dc/terms/>
+                PREFIX dcat: <http://www.w3.org/ns/dcat#>
+                PREFIX same: <https://ns.inria.fr/same/same.owl#>
+                INSERT {
+                  GRAPH same:LinkedWiki {
+                    ?URIdataset a void:Dataset .
+                    ?URIdataset dcterms:title ?title .
+                    ?URIdataset void:sparqlEndpoint ?endpoint
+                  }
+                } WHERE {
+                  SERVICE <https://linkedwiki.com/sparql> {
+                    ?URIdataset dcat:distribution ?distrib .
+                    OPTIONAL { ?URIdataset <http://purl.org/dc/terms/title> ?title }
+                    ?distrib dcat:accessURL ?endpoint 
+                  }
+                }
+            """)
+            sparql.query()
 
         except Exception as err:
             traceback.print_tb(err)
@@ -234,7 +295,7 @@ class Setup(object):
                        "PREFIX void: <http://rdfs.org/ns/void#> \nPREFIX dcterms: <http://purl.org/dc/terms/> \n" \
                        "PREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#>"
             # Helper.insert_array(self.local_endpoint, data, 'same:N', prefixes)
-            Helper.insert_array(self.local_endpoint, data, '<http://blinded.for.review.org/same/Yummydata>', prefixes)
+            Helper.insert_array(self.local_endpoint, data, '<https://ns.inria.fr/same/same.owl#Yummydata>', prefixes)
 
         except Exception as err:
             traceback.print_tb(err)
@@ -282,7 +343,53 @@ class Setup(object):
                     ?p1 ?o1
                   }
                 } WHERE {
+                  GRAPH same:LinkedWiki {
+                    ?d1 a void:Dataset ;
+                    void:sparqlEndpoint ?e1 ;
+                    ?p1 ?o1
+                  }
+                  FILTER(!EXISTS {
+                    GRAPH same:N {
+                      ?d2 void:sparqlEndpoint ?e1 ;
+                    }})
+                }
+            """)
+            sparql.query()
+
+            sparql.setQuery("""
+                PREFIX same: <https://ns.inria.fr/same/same.owl#>
+                PREFIX void: <http://rdfs.org/ns/void#>
+                INSERT {
+                  GRAPH same:N {
+                    ?d1 a void:Dataset ;
+                    void:sparqlEndpoint ?e1 ;
+                    ?p1 ?o1
+                  }
+                } WHERE {
                   GRAPH same:LODCloud {
+                    ?d1 a void:Dataset ;
+                    void:sparqlEndpoint ?e1 ;
+                    ?p1 ?o1
+                  }
+                  FILTER(!EXISTS {
+                    GRAPH same:N {
+                      ?d2 void:sparqlEndpoint ?e1 ;
+                    }})
+                }
+            """)
+            sparql.query()
+
+            sparql.setQuery("""
+                PREFIX same: <https://ns.inria.fr/same/same.owl#>
+                PREFIX void: <http://rdfs.org/ns/void#>
+                INSERT {
+                  GRAPH same:N {
+                    ?d1 a void:Dataset ;
+                    void:sparqlEndpoint ?e1 ;
+                    ?p1 ?o1
+                  }
+                } WHERE {
+                  GRAPH same:DataHub {
                     ?d1 a void:Dataset ;
                     void:sparqlEndpoint ?e1 ;
                     ?p1 ?o1

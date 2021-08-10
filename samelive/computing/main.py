@@ -15,10 +15,12 @@ print(Config.timeout)
 
 if __name__ == '__main__':
     setup.setup_vocabulary()
-    # :label: N1 to N3
+    # :label: N1 to N5
     # setup.populate_void_rkbexplorer()
     setup.populate_lodcloud()
     setup.populate_umakata()
+    setup.populate_linkedwiki()
+    setup.populate_datahub()
     # :label: CN1
     setup.cleanup_datasets()
     # :label: P1
