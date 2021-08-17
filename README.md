@@ -91,7 +91,7 @@ O<sub>1</sub> only includes resources of type same:Target, O<sub>2</sub> contain
 			<td align="left">Other Real World Entity</td> <td>78</td><td>10</td><td>68</td><td><b>0</b></td><td>22</td><td><b>0</b></td><td></td><td><b>0</b></td><td><b>0</b></td>
 	       </tr>  
 		<tr align="center">
-			<td align="left">New URIs outside A<sub>1</sub></td> <td>0</td><td>0</td><td>0</td><td>0</td><td>413</td><td>14</td><td></td><td>153</td><td>198</td>
+			<td align="left">New URIs outside A<sub>1</sub></td> <td>0</td><td>0</td><td>0</td><td>0</td><td>413</td><td>14</td><td></td><td>152</td><td>195</td>
     <tr>
     <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
     </tr>
