@@ -14,8 +14,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON, N3, XML
 
 class Statistics(object):
     def __init__(self):
-        self.local_endpoint = Config.master_endpoint
-        pass
+        self.master_endpoint = Config.master_endpoint
 
     def compute_stats(self):
         try:
@@ -36,7 +35,7 @@ class Statistics(object):
         Computes the number of extracted properties and not deferenced voted as (inverse) functional properties.
         """
         try:
-            sparql = SPARQLWrapper(self.local_endpoint)
+            sparql = SPARQLWrapper(self.master_endpoint)
             sparql.method = 'POST'
             sparql.setRequestMethod('postdirectly')
             sparql.setQuery("""
@@ -87,7 +86,7 @@ class Statistics(object):
         Computes the number of incorrect (inverse) functional properties defined as such after deferencing them
         """
         try:
-            sparql = SPARQLWrapper(self.local_endpoint)
+            sparql = SPARQLWrapper(self.master_endpoint)
             sparql.method = 'POST'
             sparql.setRequestMethod('postdirectly')
             sparql.setQuery("""
@@ -142,7 +141,7 @@ class Statistics(object):
         Computes the number of not deferenced (inverse) functional properties.
         """
         try:
-            sparql = SPARQLWrapper(self.local_endpoint)
+            sparql = SPARQLWrapper(self.master_endpoint)
             sparql.method = 'POST'
             sparql.setRequestMethod('postdirectly')
             sparql.setQuery("""
@@ -173,7 +172,7 @@ class Statistics(object):
         Computes the number of RDF documents that could not be loaded with a LOAD clause.
         """
         try:
-            sparql = SPARQLWrapper(self.local_endpoint)
+            sparql = SPARQLWrapper(self.master_endpoint)
             sparql.method = 'POST'
             sparql.setRequestMethod('postdirectly')
             sparql.setQuery("""
@@ -207,7 +206,7 @@ class Statistics(object):
         Computes the number of RDF documents that could be loaded with a LOAD clause.
         """
         try:
-            sparql = SPARQLWrapper(self.local_endpoint)
+            sparql = SPARQLWrapper(self.master_endpoint)
             sparql.method = 'POST'
             sparql.setRequestMethod('postdirectly')
             sparql.setQuery("""
