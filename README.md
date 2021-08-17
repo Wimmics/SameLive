@@ -92,19 +92,22 @@ O<sub>1</sub> only includes resources of type same:Target, O<sub>2</sub> contain
 	       </tr>  
 		<tr align="center">
 			<td align="left">New URIs outside A<sub>1</sub></td> <td>0</td><td>0</td><td>0</td><td>0</td><td>413</td><td>14</td><td></td><td>152</td><td>195</td>
-    <tr>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    </tr>
+        <tr>
+            <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        </tr>
 		<tr align="center">
 			<td align="left"><b>Undetermined URIs</b></td> <td>102</td><td>92</td><td>10</td><td>1</td><td>32</td><td>4</td><td></td><td>8</td><td>11</td>
 	       </tr>  
 		<tr align="center" >
 			<td align="left"><b>Identity Sets</b></td> <td>1</td><td colspan="2">2</td><td>219</td><td>1</td><td>1</td><td></td><td>1</td><td>1</td>
-	       </tr>  
+	       </tr>
+	    <tr>
+            <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        </tr>
 		<tr align="center">
-			<td align="left"><b>Total URIs in Identity Set</b></td> <td>440</td><td>362</td><td>78</td><td>121</td><td>707</td><td>37</td><td></td><td><b>269</b></td><td><b>323</b></td>
-	       </tr>  
-       </tbody>  
+		    <td align="left"><b>Total URIs in Identity Set</b></td> <td>440</td><td>362</td><td>78</td><td>121</td><td>707</td><td>37</td><td></td><td><b>269</b></td><td><b>323</b></td>
+        </tr>  
+    </tbody>  
 </table>
 
 To compute this solution our approach takes between 5 to 9 minutes by only considering the owl:sameAs relationships after an initialization phase of the SameLive algorithm (solution computed on 239 available endpoints).
