@@ -4,14 +4,18 @@ from functools import partial
 
 from samelive.utils.config import Config
 from samelive.query.querymanager import EndpointExploration, LocalManipulation, ErrorDetection, Setup
+from samelive.query.monitoring import Monitoring
 
 setup = Setup()
 endpoint_exploration = EndpointExploration()
 local_manipulation = LocalManipulation()
 error_detection = ErrorDetection()
+monitoring = Monitoring()
 
-print(Config.FUNC_PROP)
-print(Config.timeout)
+# Traces on the configurations options
+print("Handles (inverse) functional properties: " + str(Config.FUNC_PROP))
+if Config.FUNC_PROP:
+    print("Timeout used to retrieve (inverse) functional properties: " + str(Config.timeout))
 
 if __name__ == '__main__':
     setup.setup_vocabulary()
@@ -26,7 +30,10 @@ if __name__ == '__main__':
     # :label: P1
     setup.populate(Config.resources_list, Config.endpoints_dict)
     # :label: A1
-    setup.endpoints_availability()
+    monitoring.endpoints_availability()
+    # Optimizations with the Corese engine
+    if Config.is_corese_engine:
+        monitoring.handle_values_clause()
     iteration = 1
     # :label: T1
     resources_list = local_manipulation.get_targets(iteration)

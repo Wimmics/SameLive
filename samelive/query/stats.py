@@ -14,7 +14,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON, N3, XML
 
 class Statistics(object):
     def __init__(self):
-        self.local_endpoint = Config.local_endpoint
+        self.local_endpoint = Config.master_endpoint
         pass
 
     def compute_stats(self):

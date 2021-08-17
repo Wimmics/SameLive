@@ -67,6 +67,48 @@ The columns of the result are respectively:
 - Barack Obama
 - Others identity sets: Obama's Presidency, Obama's Presidency Transition, Obama's Senate Career, Obama's Presidential Centre, Obama's Biography, Obama's Photos, Black President.   
 
+## Comparison with other approaches
+
+The following closures were computed with the URI  http://dbpedia.org/resource/Barack_Obama.
+Our closure performed on the data extracted from the SPARQL endpoints indexed by the LODCloud, the YummyData, the LinkedWiki and the DataHub websites (the code to integrate the datasets from the void Store is still present but the endpoint is no longer in use.). 
+
+
+O<sub>1</sub> only includes resources of type same:Target, O<sub>2</sub> contains both resources of types same:Target and same:Rotten (resources that lead to potentially erroneous relationships).
+
+<table>  
+	<thead>  
+		<tr align="center">
+			<th></th><th>Ground thruth</th><th colspan="2">sameAs 0.99</th><th>sameAs 0.4</th><th>sameAs.org</th><th>LODsyndesis</th><th></th><th colspan="2">SameLive</th>
+		</tr>  
+		<tr align="center"><th align="left">Real World Entity</th> <th>A<sub>1</sub></th><th>B<sub>1</sub></th><th>B<sub>2</sub></th><th>C<sub>1</sub></th><th>S<sub>1</sub></th><th>L<sub>1</sub></th><th></th><th>0<sub>1</sub></th><th>0<sub>2</sub></th>
+		</tr>  
+	</thead>  
+	<tbody>
+		<tr align="center">
+			<td align="left">Barack Obama</td> <td>260</td><td>260</td><td>0</td><td>120</td><td>240</td><td>19</td><td></td><td>109</td><td>117</td>
+	       </tr>  
+		<tr align="center">
+			<td align="left">Other Real World Entity</td> <td>78</td><td>10</td><td>68</td><td><b>0</b></td><td>22</td><td><b>0</b></td><td></td><td><b>0</b></td><td><b>0</b></td>
+	       </tr>  
+		<tr align="center">
+			<td align="left">New URIs outside A<sub>1</sub></td> <td>0</td><td>0</td><td>0</td><td>0</td><td>413</td><td>14</td><td></td><td>153</td><td>198</td>
+    <tr>
+    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+    </tr>
+		<tr align="center">
+			<td align="left"><b>Undetermind URIs</b></td> <td>0</td><td>0</td><td>0</td><td>0</td><td>32</td><td>4</td><td></td><td>8</td><td>11</td>
+	       </tr>  
+		<tr align="center" >
+			<td align="left"><b>Identity Sets</b></td> <td>1</td><td colspan="2">2</td><td>219</td><td>1</td><td>1</td><td></td><td>1</td><td>8</td>
+	       </tr>  
+		<tr align="center">
+			<td align="left"><b>Total URIs in Identity Set</b></td> <td>440</td><td>362</td><td>78</td><td>121</td><td>707</td><td>37</td><td></td><td><b>269</b></td><td><b>323</b></td>
+	       </tr>  
+       </tbody>  
+</table>
+
+To compute this solution our approach takes between 5 to 9 minutes by only considering the owl:sameAs relationships after an initialization phase of the SameLive algorithm (solution computed on 239 available endpoints).
+
 ## Example
 
 In the example package, some code is available to show with the public dataset CovidOnTheWeb [5], how to inject starting URIs seeds from an endpoint and compute their equivalence links (article used in this example: "COVID-19: what has been learned and to be learned about the novel coronavirus disease" [6]).
@@ -85,4 +127,4 @@ In the example package, some code is available to show with the public dataset C
 [6] Yi, Y., Lagniton, P.N., Ye, S., Li, E., Xu, R.H.: Covid-19: what has been learned and to be learned about the novel coronavirus disease. International journal of biological sciences 16(10), 1753 (2020).
 
 ## Citation
-Gazzotti, R. and Gandon, F. When owl:sameAs is the Same: Experimenting Online Resolution of Identity with SPARQL Queries to Linked Open Data Sources. In Proceedings of the 17th International Conference on Web Information Systems and Technologies (WEBIST 2021) [⟨hal-03301330)](https://hal.archives-ouvertes.fr/hal-03301330)
+Gazzotti, R. and Gandon, F. When owl:sameAs is the Same: Experimenting Online Resolution of Identity with SPARQL Queries to Linked Open Data Sources. In Proceedings of the 17th International Conference on Web Information Systems and Technologies (WEBIST 2021). [⟨hal-03301330)](https://hal.archives-ouvertes.fr/hal-03301330)

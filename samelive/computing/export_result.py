@@ -3,7 +3,7 @@ from samelive.utils.config import Config
 from samelive.utils.iodata import Output
 from SPARQLWrapper import SPARQLWrapper, JSON, N3, XML
 
-local_endpoint = Config.local_endpoint
+local_endpoint = Config.master_endpoint
 
 sparql = SPARQLWrapper(local_endpoint)
 sparql.method = 'POST'
