@@ -96,7 +96,7 @@ O<sub>1</sub> only includes resources of type same:Target, O<sub>2</sub> contain
     <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
     </tr>
 		<tr align="center">
-			<td align="left"><b>Undetermind URIs</b></td> <td>0</td><td>0</td><td>0</td><td>0</td><td>32</td><td>4</td><td></td><td>8</td><td>11</td>
+			<td align="left"><b>Undetermined URIs</b></td> <td>102</td><td>92</td><td>10</td><td>1</td><td>32</td><td>4</td><td></td><td>8</td><td>11</td>
 	       </tr>  
 		<tr align="center" >
 			<td align="left"><b>Identity Sets</b></td> <td>1</td><td colspan="2">2</td><td>219</td><td>1</td><td>1</td><td></td><td>1</td><td>1</td>
