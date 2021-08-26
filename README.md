@@ -19,8 +19,10 @@ The vocabulary of the algorithm is available at https://ns.inria.fr/same/same.ow
 
 ## Settings
 
-To configure the starting seeds URIs (in same:Q0), the endpoints to include (in same:N), URL of the triplestore where UPDATE clauses are executed, modes of the algorithm (enable (inverse) functional properties handling):
+To configure the starting seeds URIs (in same:Q0), the endpoints to include (in same:N), URL of the triplestore where UPDATE clauses are executed, modes of the algorithm (enable (inverse) functional properties handling, non-ASCII characters handling...):
 - Modify the file samelive/utils/config.py
+
+It is important to note that the initialization with (inverse) functional properties is very time consuming because of the LOAD clause used to retrieve many schemas.
 
 ## Run
 

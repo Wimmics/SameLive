@@ -41,8 +41,8 @@ class Monitoring(object):
                 } WHERE {
                   ?dataset void:sparqlEndpoint ?endpoint
                   FILTER NOT EXISTS {
-                    ?dataset ends:status ?status .
-                    ?status ends:statusIsAvailable ?available
+                    ?dataset ends:status ?s1 .
+                    ?s1 ends:statusIsAvailable ?a1
                   }
 
                   # Replace to comply with RFC 3986
@@ -160,7 +160,7 @@ class Monitoring(object):
                 PREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#>
                 INSERT {
                   GRAPH same:N {
-                    ?status same:hasLimit ?limit
+                    ?status same:hasResultsLimit ?limit
                   }
                 } WHERE {
                   {

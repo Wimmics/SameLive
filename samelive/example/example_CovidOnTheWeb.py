@@ -16,10 +16,11 @@ monitoring = Monitoring()
 
 if __name__ == '__main__':
     setup.setup_vocabulary()
-    setup.populate_lodcloud()
     # setup.populate_void_rkbexplorer()
+    setup.populate_lodcloud()
     setup.populate_umakata()
-    setup.cleanup_datasets()
+    setup.populate_linkedwiki()
+    setup.populate_datahub()
     try:
         sparql = SPARQLWrapper(Config.master_endpoint)
         sparql.method = 'POST'
@@ -55,7 +56,7 @@ if __name__ == '__main__':
 
     monitoring.endpoints_availability()
     # Optimizations with the Corese engine
-    if Config.is_corese_engine:
+    if Config.IS_CORESE_ENGINE:
         monitoring.handle_values_clause()
     iteration = 1
     resources_list = local_manipulation.get_targets(iteration)
@@ -69,10 +70,14 @@ if __name__ == '__main__':
     while len(resources_list) != 0:
         print(len(resources_list))
         print(resources_list)
-        endpoint_exploration.retrieve_sameas(iteration)
+        # :label: S1
+        endpoint_exploration.optimize_remote_queries(endpoint_exploration._generate_query_pattern_sameas, iteration)
         if Config.FUNC_PROP:
-            endpoint_exploration.retrieve_functionalproperties_links1(iteration)
-            endpoint_exploration.retrieve_functionalproperties_links2(iteration)
+            # :label: (I)FP1 and (I)FP2
+            endpoint_exploration.optimize_remote_queries(
+                endpoint_exploration._generate_query_pattern_functionalproperties_links1, iteration)
+            endpoint_exploration.optimize_remote_queries(
+                endpoint_exploration._generate_queries_pattern_functionalproperties_links2, iteration)
         error_detection.rotten_sameas(iteration)
         error_detection.rotten_sameas2(iteration)
         iteration += 1

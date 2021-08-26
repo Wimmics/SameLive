@@ -464,6 +464,7 @@ class Setup(object):
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX void: <http://rdfs.org/ns/void#>
                 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                PREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#>
                 PREFIX prov: <http://www.w3.org/ns/prov#>
                 PREFIX fno: <https://w3id.org/function/ontology#>
                 PREFIX dcterms: <http://purl.org/dc/terms/>
@@ -565,7 +566,21 @@ class Setup(object):
                     rdfs:range xsd:integer ;
                     rdfs:label "Number of time a property is defined as owl:FunctionalProperty on void:Dataset that include the property's schema." .
                     same:S1 a fno:Function, prov:Entity ;
-                    dcterms:description "Retrieves owl:sameAs relationships" .
+                    dcterms:description "Retrieves owl:sameAs relationships." .
+                    same:IFP2 a fno:Function, prov:Entity ;
+                    dcterms:description "Computes owl:sameAs relationships with (inverse) functional properties patterns." .
+                    same:valuesIsAvailable a owl:DatatypeProperty ;
+                    rdfs:domain ends:EndpointStatus ;
+                    rdfs:range 	xsd:boolean ;
+                    rdfs:label "Describes whether a void:Dataset endpoint support the VALUES clause or not." .
+                    same:supportsNonASCIICharacters a owl:DatatypeProperty ;
+                    rdfs:domain ends:EndpointStatus ;
+                    rdfs:range 	xsd:boolean ;
+                    rdfs:label "Describes whether a void:Dataset endpoint support non-ASCII characters or not." .
+                    same:hasResultsLimit a owl:DatatypeProperty ;
+                    rdfs:domain ends:EndpointStatus ;
+                    rdfs:range xsd:integer ;
+                    rdfs:label "Results limit returned by an endpoint." .
                   }
                 }
             """)
@@ -617,14 +632,15 @@ class Setup(object):
         except Exception as err:
             traceback.print_tb(err)
 
+
 class LocalManipulation(object):
     def __init__(self):
         self.master_endpoint = Config.master_endpoint
 
-    def get_targets(self, it: int = 0) -> list:
+    def get_targets(self, iterator: int = 0) -> [str]:
         """
         Retrieves the resources from a local endpoint the same:Target of the iteration it.
-        :param it: int, iteration of the algorithm (:label: T1).
+        :param iterator: int, iteration of the algorithm (:label: T1).
         :return: List of String, all the same:Target of the iteration it.
         """
         sparql = SPARQLWrapper(self.master_endpoint)
@@ -633,7 +649,7 @@ class LocalManipulation(object):
         sparql.setQuery("""
             PREFIX same: <https://ns.inria.fr/same/same.owl#>
             SELECT ?URITarget
-            FROM same:Q""" + str(it-1) + """
+            FROM same:Q""" + str(iterator - 1) + """
             WHERE {
               ?URITarget a same:Target
             }
@@ -676,7 +692,7 @@ class LocalManipulation(object):
             traceback.print_tb(err)
         return dic_datasets
 
-    def compute_inversefunctionalproperty(self, it=1):
+    def compute_inversefunctionalproperty(self, iterator: int = 1):
         try:
             sparql = SPARQLWrapper(self.master_endpoint)
             sparql.method = 'POST'
@@ -852,15 +868,61 @@ class EndpointExploration(object):
     def __init__(self):
         self.master_endpoint = Config.master_endpoint
         self.timeout = Config.timeout
-        self.is_corese_engine = Config.is_corese_engine
+        self.IS_CORESE_ENGINE = Config.IS_CORESE_ENGINE
+        self.NON_ASCII_CHARACTERS_HANDLING = Config.NON_ASCII_CHARACTERS_HANDLING
 
-    def _generate_query_pattern_s1(self, it: int, sparql_events: str = "", dataset_options: str = ""):
+    def optimize_remote_queries(self, function, iterator: int = 1):
+        """
+        Allows to handle bindings with the VALUES clause and non-ASCII characters when generating SPARQL queries for
+        remote endpoints. Then this function will execute these SPARQL queries.
+        :param function: Function used to generate patterns of SPARQL queries (the function may return a String or tuple
+        of Strings).
+        :param iterator: int, iteration of the algorithm.
+        """
+        try:
+            sparql = SPARQLWrapper(self.master_endpoint)
+            sparql.method = 'POST'
+            sparql.setRequestMethod('postdirectly')
+            # Optimizations with the Corese engine
+            if self.IS_CORESE_ENGINE:
+                for query in Helper.non_ascii_characters_handling(function, iterator=iterator,
+                                                                  handle_non_ascii=self.NON_ASCII_CHARACTERS_HANDLING,
+                                                                  # Replace it with @bindings in newer versions of
+                                                                  # Corese
+                                                                  sparql_events="@bind kg:values",
+                                                                  dataset_options="same:valuesIsAvailable true"):
+                    sparql.setQuery(query)
+                    sparql.query()
+
+                # Bindings with FILTER
+                for query in Helper.non_ascii_characters_handling(function,  iterator=iterator,
+                                                                  handle_non_ascii=self.NON_ASCII_CHARACTERS_HANDLING,
+                                                                  # Replace it with @bindings in newer versions of
+                                                                  # Corese
+                                                                  sparql_events="@bind kg:filter",
+                                                                  dataset_options="same:valuesIsAvailable false"):
+                    sparql.setQuery(query)
+                    sparql.query()
+
+            # Default behavior for other triplestores
+            else:
+                for query in Helper.non_ascii_characters_handling(function, iterator=iterator,
+                                                                  handle_non_ascii=self.NON_ASCII_CHARACTERS_HANDLING):
+                    sparql.setQuery(query)
+                    sparql.query()
+
+        except Exception as err:
+            traceback.print_tb(err)
+
+    def _generate_query_pattern_sameas(self, iterator: int, sparql_events: str = "", dataset_options: str = "",
+                                       target_options="FILTER(!REGEX(str(?URITarget), \"[^\\\\x00-\\\\x7F]\", \"i\"))"):
         """
         Generate the query used to retrieve owl:sameAs relationships (:label: S1).
-        :param it: int, iteration of the algorithm.
+        :param iterator: int, iteration of the algorithm.
         :param sparql_events: String, SPARQL Events of the Corese engine
         (https://ns.inria.fr/sparql-extension/event.html#event).
         :param dataset_options: String, Options on the available SPARQL endpoints.
+        :param target_options: String, Options on the same:Target resources.
         :return: String, SPARQL query used to retrieve owl:sameAs relationships.
         """
         query = """
@@ -872,7 +934,7 @@ class EndpointExploration(object):
                     PREFIX prov: <http://www.w3.org/ns/prov#>
                     PREFIX fno: <https://w3id.org/function/ontology#>
                     PREFIX same: <https://ns.inria.fr/same/same.owl#>
-                    
+                    PREFIX dcterms: <http://purl.org/dc/terms/>
                     %s
                     INSERT {
                       ?ngraph a rdfg:Graph, prov:Entity .
@@ -887,7 +949,7 @@ class EndpointExploration(object):
                       dcterms:date ?date .
 
                       ?ngraph prov:wasGeneratedBy ?execution .
-                      
+
                       GRAPH same:Q%s {
                         ?URIy a same:Target ;
                         void:inDataset ?dataset ;
@@ -900,7 +962,7 @@ class EndpointExploration(object):
                     } WHERE {
                       GRAPH same:Q%s  {
                         ?URITarget a same:Target
-                        FILTER(!REGEX(str(?URITarget), "[^\\\\x00-\\\\x7F]", "i"))
+                        %s
                       }
                       GRAPH same:N {
                         ?dataset void:sparqlEndpoint ?endpoint ;
@@ -927,35 +989,9 @@ class EndpointExploration(object):
                       FILTER(!EXISTS { ?y a same:Target })
                       BIND(xsd:dateTime(NOW()) AS ?date)
                     }
-                """ % (sparql_events, str(it), str(it), it, it, str(it - 1), dataset_options, str(it), str(it))
+                """ % (sparql_events, str(iterator), str(iterator), iterator, iterator, str(iterator - 1),
+                       target_options, dataset_options, str(iterator), str(iterator))
         return query
-
-    def retrieve_sameas(self, it: int = 1):
-        """
-        Retrieves owl:sameAs relationships (:label: S1).
-        :param it: int, iteration of the algorithm.
-        """
-        try:
-            sparql = SPARQLWrapper(self.master_endpoint)
-            sparql.method = 'POST'
-            sparql.setRequestMethod('postdirectly')
-            # Optimizations with the Corese engine
-            if self.is_corese_engine:
-                # If endpoints support the clause values
-                sparql.setQuery(self._generate_query_pattern_s1(it, "@bind kg:values", "same:valuesIsAvailable true"))
-                sparql.query()
-
-                # Bindings with FILTER
-                sparql.setQuery(self._generate_query_pattern_s1(it, dataset_options="same:valuesIsAvailable false"))
-                sparql.query()
-
-            # Default behavior for other triplestores
-            else:
-                sparql.setQuery(self._generate_query_pattern_s1(it))
-                sparql.query()
-
-        except Exception as err:
-            traceback.print_tb(err)
 
     def retrieve_functionalproperties_schemas(self):
         """
@@ -1121,13 +1157,16 @@ class EndpointExploration(object):
         except Exception as err:
             traceback.print_tb(err)
 
-    def _generate_query_pattern_ifp1(self, it: int = 1, sparql_events: str = "", dataset_options: str = ""):
+    def _generate_query_pattern_functionalproperties_links1(self, iterator: int = 1, sparql_events: str = "",
+                                                            dataset_options: str = "",
+                                                            target_options="FILTER(!REGEX(str(?URITarget), \"[^\\\\x00-\\\\x7F]\", \"i\"))"):
         """
-        Generate the query used to retrieve (inverse) functional properties patterns (:label: (I)FP1).
-        :param it: int, iteration of the algorithm.
+        Generates the query used to retrieve (inverse) functional properties patterns (:label: (I)FP1).
+        :param iterator: int, iteration of the algorithm.
         :param sparql_events: String, SPARQL Events of the Corese engine
         (https://ns.inria.fr/sparql-extension/event.html#event).
         :param dataset_options: String, Options on the available SPARQL endpoints.
+        :param target_options: String, Options on the same:Target resources.
         :return: String, SPARQL query used to retrieve (inverse) functional properties patterns
         """
         query = """
@@ -1158,7 +1197,7 @@ class EndpointExploration(object):
     
                       GRAPH same:Q%s  {
                         ?URITarget a same:Target
-                        FILTER(!REGEX(str(?URITarget), "[^\\\\x00-\\\\x7F]", "i"))
+                        %s
                       }
                       GRAPH kg:default {
                         ?IFP rdf:type|same:votingType owl:InverseFunctionalProperty .
@@ -1188,53 +1227,30 @@ class EndpointExploration(object):
                       }
                       }
                     }
-                """ % (sparql_events, str(it), str(it), str(it), it, str(it), it, dataset_options, str(it - 1))
+                """ % (sparql_events, str(iterator), str(iterator), str(iterator), iterator, str(iterator), iterator,
+                       dataset_options, str(iterator - 1), target_options)
 
         return query
 
-    def retrieve_functionalproperties_links1(self, it: int = 1):
+    def _generate_queries_pattern_functionalproperties_links2(self, iterator: int = 1, sparql_events: str = "",
+                                                              dataset_options: str = "", *_):
         """
-        Retrieves (inverse) functional properties patterns (:label: (I)FP1).
-        :param it: int, iteration of the algorithm.
+        Generates the queries to compute new same:Target resources and owl:sameAs relationships with (inverse)
+        functional properties patterns (:label: (I)FP2).
+        :param iterator: int, iteration of the algorithm.
+        :param sparql_events: String, SPARQL Events of the Corese engine
+        (https://ns.inria.fr/sparql-extension/event.html#event).
+        :param dataset_options: String, Options on the available SPARQL endpoints.
+        :param _: Unused parameter, it is here for compatibilities with other functions.
+        :return: String, SPARQL query used to retrieve (inverse) functional properties patterns
         """
-        try:
-            sparql = SPARQLWrapper(self.master_endpoint)
-            sparql.method = 'POST'
-            sparql.setRequestMethod('postdirectly')
-            # Optimizations with the Corese engine
-            if self.is_corese_engine:
-                # If endpoints support the clause values
-                sparql.setQuery(self._generate_query_pattern_ifp1(it, "@bind kg:values", "same:valuesIsAvailable true"))
-                sparql.query()
-
-                # Bindings with FILTER
-                sparql.setQuery(self._generate_query_pattern_ifp1(it, dataset_options="same:valuesIsAvailable false"))
-                sparql.query()
-
-            # Default behavior for other triplestores
-            else:
-                sparql.setQuery(self._generate_query_pattern_ifp1(it))
-                sparql.query()
-
-        except Exception as err:
-            traceback.print_tb(err)
-
-    def retrieve_functionalproperties_links2(self, it: int = 1):
-        """
-        Computes new same:Target resources and owl:sameAs relationships (inverse) functional properties patterns
-        (:label: (I)FP2).
-        :param it: int, iteration of the algorithm.
-        """
-        try:
-            sparql = SPARQLWrapper(self.master_endpoint)
-            sparql.method = 'POST'
-            sparql.setRequestMethod('postdirectly')
-            sparql.setQuery("""
+        query_fp = """
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX void: <http://rdfs.org/ns/void#>
                 PREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#>
                 PREFIX same: <https://ns.inria.fr/same/same.owl#>
+                %s
                 INSERT {
                   GRAPH ?ngraph {
                     ?URITargetI1 owl:sameAs ?URITargetI2 .
@@ -1243,6 +1259,13 @@ class EndpointExploration(object):
                     ?URITargetF2 owl:sameAs ?URITargetF1 .
                   }
                   ?ngraph same:hasIteration %d
+                  
+                  ?execution a fno:Execution, prov:Activity ;
+                  fno:executes same:IFP2 ;
+                  dcterms:date ?date .
+
+                  ?ngraph prov:wasGeneratedBy ?execution .
+                  
                   GRAPH same:Q%s {
                     ?URITargetI2 a same:Target ;
                     void:inDataset ?dataset ;
@@ -1268,7 +1291,8 @@ class EndpointExploration(object):
                   GRAPH same:N {
                     ?dataset void:sparqlEndpoint ?endpoint ;
                     ends:status ?status .
-                    ?status ends:statusIsAvailable true
+                    ?status ends:statusIsAvailable true ;
+                    %s
                   }
                   OPTIONAL {
                     GRAPH same:InverseFunctionalProperty_%s {
@@ -1292,7 +1316,7 @@ class EndpointExploration(object):
                     FILTER(!EXISTS { ?URITargetF2 a same:Target })
                     FILTER(!EXISTS { ?URITargetF2 a same:Rotten })
                   }
-                  BIND(URI(concat(str(?endpoint), '#', %s, '(I)FP2')) as ?ngraph)
+                  BIND(URI(concat(str(?endpoint), '#', %s, 'IFP2')) as ?ngraph)
                   BIND(REPLACE(STR(?URITargetI2), "(#|/)[^#/]*$", "$1") as ?nstargeti2)
                   BIND(REPLACE(STR(?URITargetI2), ".+://(.*?)/.*", "$1") as ?auttargeti2)
                   BIND(REPLACE(STR(?URITargetI2), ".+://(.*)", "$1") as ?noschemetargeti2)
@@ -1302,15 +1326,17 @@ class EndpointExploration(object):
                   FILTER(?URITargetI1 != ?URITargetI2)
                   FILTER(?URITargetF1 != ?URITargetF2)
                 }
-            """ % (it, str(it), str(it), str(it), str(it), it, str(it), it, str(it), it, str(it), str(it), str(it)))
-            sparql.query()
+            """ % (sparql_events, iterator, str(iterator), str(iterator), str(iterator), str(iterator), iterator,
+                   str(iterator), iterator, str(iterator), iterator, str(iterator), dataset_options, str(iterator),
+                   str(iterator))
 
-            sparql.setQuery("""
+        query_ifp = """
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX void: <http://rdfs.org/ns/void#>
                 PREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#>
                 PREFIX same: <https://ns.inria.fr/same/same.owl#>
+                %s
                 INSERT {
                   GRAPH ?ngraph {
                     ?URITargetI1 owl:sameAs ?URITargetI2 .
@@ -1344,7 +1370,8 @@ class EndpointExploration(object):
                   GRAPH same:N {
                     ?dataset void:sparqlEndpoint ?endpoint ;
                     ends:status ?status .
-                    ?status ends:statusIsAvailable true
+                    ?status ends:statusIsAvailable true ;
+                    %s
                   }
                   OPTIONAL {
                     GRAPH same:InverseFunctionalProperty_%s {
@@ -1378,22 +1405,22 @@ class EndpointExploration(object):
                   FILTER(?URITargetI1 != ?URITargetI2)
                   FILTER(?URITargetF1 != ?URITargetF2)
                 }
-            """ % (it, str(it), str(it), str(it), str(it), it, str(it), it, str(it), it, str(it), str(it), str(it)))
-            # sparql.query()
-        except Exception as err:
-            traceback.print_tb(err)
+            """ % (sparql_events, iterator, str(iterator), str(iterator), str(iterator), str(iterator), iterator,
+                    str(iterator), iterator, str(iterator), iterator, str(iterator), dataset_options, str(iterator),
+                   str(iterator))
+        return query_fp, query_ifp
 
 
 class ErrorDetection(object):
     def __init__(self):
         self.master_endpoint = Config.master_endpoint
 
-    def rotten_sameas(self, it: int = 1):
+    def rotten_sameas(self, iterator: int = 1):
         """
         Identifies 'rotten' owl:sameAs relations by checking that a resource does not lead to an another resource with
         the same authority at distinct iterations, stores the URIs as same:Rotten then deletes the relation
         (:label: R1).
-        :param it: int, iteration of the algorithm.
+        :param iterator: int, iteration of the algorithm.
         """
         try:
             sparql = SPARQLWrapper(self.master_endpoint)
@@ -1438,7 +1465,7 @@ class ErrorDetection(object):
                     # OPTIONAL if ?x in Q0
                     OPTIONAL { ?Rotten void:inDataset ?DatasetRotten }
                 }
-            """ % (str(it), str(it-1)))
+            """ % (str(iterator), str(iterator - 1)))
             sparql.query()
 
             self.rotten_sameas_cleanup()
@@ -1446,11 +1473,11 @@ class ErrorDetection(object):
         except Exception as err:
             traceback.print_tb(err)
 
-    def rotten_sameas2(self, it: int = 1):
+    def rotten_sameas2(self, iterator: int = 1):
         """
         Identifies 'rotten' owl:sameAs relations by checking that a resource does not lead to an another resource with
         the same authority at the same iteration, stores the URIs as same:Rotten then deletes the relation (:label: R2).
-        :param it: int, iteration of the algorithm.
+        :param iterator: int, iteration of the algorithm.
         """
         try:
             sparql = SPARQLWrapper(self.master_endpoint)
@@ -1489,7 +1516,7 @@ class ErrorDetection(object):
                                    && xsd:integer(?it1) = xsd:integer(?it2))
                                   })
                 }
-            """ % (str(it), str(it)))
+            """ % (str(iterator), str(iterator)))
             sparql.query()
 
             self.rotten_sameas_cleanup()

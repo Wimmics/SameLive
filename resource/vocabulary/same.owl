@@ -11,6 +11,7 @@
     <dcterms:creator>Raphael Gazzotti</dcterms:creator>
     <dcterms:creator>Fabien Gandon</dcterms:creator>
     <dcterms:title xml:lang="en">SameLive Vocabulary</dcterms:title>
+    <dcterms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2021-08-25</dcterms:modified>
     <vann:preferredNamespacePrefix>same</vann:preferredNamespacePrefix>
     <vann:preferredNamespaceUri>https://ns.inria.fr/same/</vann:preferredNamespaceUri>
     <dcterms:type rdf:resource="http://purl.org/adms/assettype/Ontology"/>
@@ -173,6 +174,36 @@
     <rdfs:domain rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
     <rdfs:label>Number of time a property is defined as owl:FunctionalProperty on void:Dataset that include the property's schema.</rdfs:label>
+  </owl:DatatypeProperty>
+
+  <rdf:Description rdf:about="https://ns.inria.fr/same/same.owl#S1">
+    <rdf:type rdf:resource="https://w3id.org/function/ontology#Function"/>
+    <rdf:type rdf:resource="http://www.w3.org/ns/prov#Entity"/>
+    <dcterms:description>Retrieves owl:sameAs relationships.</dcterms:description>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="https://ns.inria.fr/same/same.owl#IFP2">
+    <rdf:type rdf:resource="https://w3id.org/function/ontology#Function"/>
+    <rdf:type rdf:resource="http://www.w3.org/ns/prov#Entity"/>
+    <dcterms:description>Computes owl:sameAs relationships with (inverse) functional properties patterns.</dcterms:description>
+  </rdf:Description>
+
+  <owl:DatatypeProperty rdf:about="https://ns.inria.fr/same/same.owl#valuesIsAvailable">
+    <rdfs:domain rdf:resource="http://labs.mondeca.com/vocab/endpointStatus#EndpointStatus"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:label>Describes whether a void:Dataset endpoint support the VALUES clause or not.</rdfs:label>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="https://ns.inria.fr/same/same.owl#supportsNonASCIICharacters">
+    <rdfs:domain rdf:resource="http://labs.mondeca.com/vocab/endpointStatus#EndpointStatus"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:label>Describes whether a void:Dataset endpoint support non-ASCII characters or not.</rdfs:label>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="https://ns.inria.fr/same/same.owl#hasResultsLimit">
+    <rdfs:domain rdf:resource="http://labs.mondeca.com/vocab/endpointStatus#EndpointStatus"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <rdfs:label>Results limit returned by an endpoint.</rdfs:label>
   </owl:DatatypeProperty>
 
 </rdf:RDF>

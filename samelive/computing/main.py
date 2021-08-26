@@ -16,6 +16,7 @@ monitoring = Monitoring()
 print("Handles (inverse) functional properties: " + str(Config.FUNC_PROP))
 if Config.FUNC_PROP:
     print("Timeout used to retrieve (inverse) functional properties: " + str(Config.timeout))
+print("Handles non-ASCII characters: " + str(Config.NON_ASCII_CHARACTERS_HANDLING))
 
 if __name__ == '__main__':
     setup.setup_vocabulary()
@@ -32,8 +33,10 @@ if __name__ == '__main__':
     # :label: A1
     monitoring.endpoints_availability()
     # Optimizations with the Corese engine
-    if Config.is_corese_engine:
+    if Config.IS_CORESE_ENGINE:
         monitoring.handle_values_clause()
+    if Config.NON_ASCII_CHARACTERS_HANDLING:
+        monitoring.handle_non_ascii_character()
     iteration = 1
     # :label: T1
     resources_list = local_manipulation.get_targets(iteration)
@@ -46,14 +49,19 @@ if __name__ == '__main__':
     start_time = time.time()
     # While there are same:Target in the current iteration named graph
     while len(resources_list) != 0:
-        print(len(resources_list))
+        print("Iteration: " + str(iteration))
+        print("Number of resources of type same:Target in the current iteration: " + str(len(resources_list)))
+        print("Resources of type same:Target used in the current iteration:")
         print(resources_list)
         # :label: S1
-        endpoint_exploration.retrieve_sameas(iteration)
+        endpoint_exploration.optimize_remote_queries(endpoint_exploration._generate_query_pattern_sameas, iteration)
         if Config.FUNC_PROP:
             # :label: (I)FP1 and (I)FP2
-            endpoint_exploration.retrieve_functionalproperties_links1(iteration)
-            endpoint_exploration.retrieve_functionalproperties_links2(iteration)
+            endpoint_exploration.optimize_remote_queries(
+                endpoint_exploration._generate_query_pattern_functionalproperties_links1, iteration)
+            endpoint_exploration.optimize_remote_queries(
+                endpoint_exploration._generate_queries_pattern_functionalproperties_links2, iteration)
+
         # :label: R1 and R2 (CR1 is called by these functions)
         error_detection.rotten_sameas(iteration)
         error_detection.rotten_sameas2(iteration)
