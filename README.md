@@ -6,7 +6,7 @@ This program consists in discovering equivalence links for a given set of URIs d
 
 A triplestore with the option to write UPDATE clauses and RDF* triples is required to execute the code.
 
-Command to install and launch Corese version 4.1.6d (a triplestore) [1]:
+Command to install and launch Corese version 4.2.3c (a triplestore) [1]:
 - endpoint.sh download
 
 The next time to launch Corese you just have to execute:
