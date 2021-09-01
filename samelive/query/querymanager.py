@@ -17,47 +17,7 @@ class Setup(object):
     def __init__(self):
         self.master_endpoint = Config.master_endpoint
 
-    def populate(self, resources_list: list):
-        """
-        Populates a triplestore with resources that will be used by the identity link search algorithm.
-        :param resources_list: List of String, resources for which identity links are sought.
-        """
-        try:
-            sparql = SPARQLWrapper(self.master_endpoint)
-            sparql.method = 'POST'
-            sparql.setRequestMethod('postdirectly')
-            sparql.setQuery("""
-                PREFIX same: <https://ns.inria.fr/same/same.owl#>
-                PREFIX owl: <http://www.w3.org/2002/07/owl#>
-                INSERT DATA {
-                  GRAPH same:Q0 {
-                    %s
-                  }
-                  same:Q0 same:hasIteration %d
-                }
-            """ % ('.\n'.join(["<" + r + "> a same:Target" for r in resources_list]), 0))
-            sparql.query()
-
-            sparql.setQuery("""
-                PREFIX same: <https://ns.inria.fr/same/same.owl#>
-                WITH same:Q0
-                INSERT {
-                  ?URITarget same:hasNamespace ?nstarget ;
-                  same:hasAuthority ?auttarget ;
-                  same:hasValueWithNoScheme ?noschemetarget
-                } WHERE {
-                  ?URITarget a same:Target
-                  BIND(REPLACE(STR(?URITarget), "(#|/)[^#/]*$", "$1") as ?nstarget)
-                  BIND(REPLACE(STR(?URITarget), ".+://(.*)", "$1") as ?noschemetarget)
-                  BIND(REPLACE(STR(?URITarget), ".+://(.*?)/.*", "$1") as ?auttarget)
-                }
-            """)
-            sparql.query()
-
-        except Exception as err:
-            traceback.print_tb(err)
-
-    def populate(self, resources_list: list, endpoints_dict: dict):
+    def populate(self, resources_list: list, endpoints_dict: dict = {}):
         """
         Populates a triplestore with resources and endpoints that will be used by the equivalent links search algorithm
         (:label: P1).
@@ -692,6 +652,36 @@ class LocalManipulation(object):
             traceback.print_tb(err)
         return dic_datasets
 
+    def get_datasets_with_limits(self) -> dict:
+        """
+        Returns all the available datasets and the endpoint where we can reach them.
+        :return: Dict, key is the dataset and the value is a list containing the endpoint and the limit of results.
+        """
+        sparql = SPARQLWrapper(self.master_endpoint)
+        sparql.method = 'POST'
+        sparql.setReturnFormat(JSON)
+        sparql.setQuery("""
+            PREFIX void: <http://rdfs.org/ns/void#>
+            PREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#>
+            PREFIX same: <https://ns.inria.fr/same/same.owl#>
+            SELECT ?dataset ?endpoint ?limit
+            FROM same:N
+            WHERE {
+              ?dataset void:sparqlEndpoint ?endpoint ;
+              ends:status ?status .
+              ?status ends:statusIsAvailable true ;
+              ?status same:hasResultsLimit ?limit
+            }
+        """)
+        dic_datasets = {}
+        try:
+            json = sparql.query().convert()["results"]["bindings"]
+            for j in json:
+                dic_datasets.update({j["dataset"]["value"]: [j["endpoint"]["value"], j["limit"]["value"]]})
+        except Exception as err:
+            traceback.print_tb(err)
+        return dic_datasets
+
     def compute_inversefunctionalproperty(self, iterator: int = 1):
         try:
             sparql = SPARQLWrapper(self.master_endpoint)
@@ -887,9 +877,9 @@ class EndpointExploration(object):
             if self.IS_CORESE_ENGINE:
                 for query in Helper.non_ascii_characters_handling(function, iterator=iterator,
                                                                   handle_non_ascii=self.NON_ASCII_CHARACTERS_HANDLING,
-                                                                  # Replace it with @bindings in newer versions of
+                                                                  # Replace it with @bind in older versions of
                                                                   # Corese
-                                                                  sparql_events="@bind kg:values",
+                                                                  sparql_events="@binding kg:values",
                                                                   dataset_options="same:valuesIsAvailable true"):
                     sparql.setQuery(query)
                     sparql.query()
@@ -897,9 +887,9 @@ class EndpointExploration(object):
                 # Bindings with FILTER
                 for query in Helper.non_ascii_characters_handling(function,  iterator=iterator,
                                                                   handle_non_ascii=self.NON_ASCII_CHARACTERS_HANDLING,
-                                                                  # Replace it with @bindings in newer versions of
+                                                                  # Replace it with @bind in older versions of
                                                                   # Corese
-                                                                  sparql_events="@bind kg:filter",
+                                                                  sparql_events="@binding kg:filter",
                                                                   dataset_options="same:valuesIsAvailable false"):
                     sparql.setQuery(query)
                     sparql.query()

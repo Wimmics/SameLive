@@ -2,7 +2,6 @@
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
          xmlns:owl="http://www.w3.org/2002/07/owl#"
          xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-         xmlns:vann="http://purl.org/vocab/vann/"
          xmlns:dcterms="http://purl.org/dc/terms/">
 
   <owl:Ontology rdf:about="https://ns.inria.fr/same/same.owl">
@@ -11,7 +10,7 @@
     <dcterms:creator>Raphael Gazzotti</dcterms:creator>
     <dcterms:creator>Fabien Gandon</dcterms:creator>
     <dcterms:title xml:lang="en">SameLive Vocabulary</dcterms:title>
-    <dcterms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2021-08-25</dcterms:modified>
+    <dcterms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2021-24-19</dcterms:modified>
     <vann:preferredNamespacePrefix>same</vann:preferredNamespacePrefix>
     <vann:preferredNamespaceUri>https://ns.inria.fr/same/</vann:preferredNamespaceUri>
     <dcterms:type rdf:resource="http://purl.org/adms/assettype/Ontology"/>

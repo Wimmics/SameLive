@@ -28,4 +28,4 @@ class Config(object):
     endpoints_dict = {}
 
     slave_endpoints = ["http://localhost:8083/sparql",
-                           "http://localhost:8084/sparql"]
+                       "http://localhost:8084/sparql"]
