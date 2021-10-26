@@ -21,6 +21,7 @@ if __name__ == '__main__':
     setup.populate_umakata()
     setup.populate_linkedwiki()
     setup.populate_datahub()
+
     try:
         sparql = SPARQLWrapper(Config.master_endpoint)
         sparql.method = 'POST'
@@ -58,6 +59,8 @@ if __name__ == '__main__':
     # Optimizations with the Corese engine
     if Config.IS_CORESE_ENGINE:
         monitoring.handle_values_clause()
+    if Config.NON_ASCII_CHARACTERS_HANDLING:
+        monitoring.handle_non_ascii_character()
     iteration = 1
     resources_list = local_manipulation.get_targets(iteration)
     if Config.FUNC_PROP:
@@ -68,7 +71,9 @@ if __name__ == '__main__':
     start_time = time.time()
     # While there are same:Target in the current iteration named graph
     while len(resources_list) != 0:
-        print(len(resources_list))
+        print("Iteration: " + str(iteration))
+        print("Number of resources of type same:Target in the current iteration: " + str(len(resources_list)))
+        print("Resources of type same:Target used in the current iteration:")
         print(resources_list)
         # :label: S1
         endpoint_exploration.optimize_remote_queries(endpoint_exploration._generate_query_pattern_sameas, iteration)

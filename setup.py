@@ -12,7 +12,7 @@ class Install(_install):
 setup(
     name='SameLive',
     packages=["samelive"],
-    version='1.1.0',
+    version='1.1.1',
     author='Raphaël Gazzotti',
     author_email='raphael.gazzotti@inria.fr',
     cmdclass={'install': Install},

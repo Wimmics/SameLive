@@ -51,14 +51,14 @@ class Setup(object):
                 PREFIX same: <https://ns.inria.fr/same/same.owl#>
                 WITH same:Q0
                 INSERT {
-                  ?URITarget same:hasNamespace ?nstarget ;
+                  ?IRITarget same:hasNamespace ?nstarget ;
                   same:hasAuthority ?auttarget ;
                   same:hasValueWithNoScheme ?noschemetarget
                 } WHERE {
-                  ?URITarget a same:Target
-                  BIND(REPLACE(STR(?URITarget), "(#|/)[^#/]*$", "$1") as ?nstarget)
-                  BIND(REPLACE(STR(?URITarget), ".+://(.*)", "$1") as ?noschemetarget)
-                  BIND(REPLACE(STR(?URITarget), ".+://(.*?)/.*", "$1") as ?auttarget)
+                  ?IRITarget a same:Target
+                  BIND(REPLACE(STR(?IRITarget), "(#|/)[^#/]*$", "$1") as ?nstarget)
+                  BIND(REPLACE(STR(?IRITarget), ".+://(.*)", "$1") as ?noschemetarget)
+                  BIND(REPLACE(STR(?IRITarget), ".+://(.*?)/.*", "$1") as ?auttarget)
                 }
             """)
             sparql.query()
@@ -124,7 +124,9 @@ class Setup(object):
         """
         try:
             headers = {'Accept': 'application/json'}
-            response = requests.get("https://lod-cloud.net/lod-data.json", headers=headers)
+            # backup solution, the website lod-cloud.net is currently down
+            response = requests.get("https://web.archive.org/web/20210814083458id_/https://lod-cloud.net/lod-data.json",
+                                    headers=headers)
             lod_dump = json.loads(response.text)
             dataset_names = [name for name in lod_dump]
             data = []
@@ -219,7 +221,7 @@ class Setup(object):
 
     def populate_umakata(self):
         """
-        Retrieves datasets information on the API of lod-cloud.net and populates a triplestore with this data
+        Retrieves datasets information on the API of yummydata and populates a triplestore with this data
         (:label: N3).
         """
         try:
@@ -608,16 +610,16 @@ class LocalManipulation(object):
         sparql.setReturnFormat(JSON)
         sparql.setQuery("""
             PREFIX same: <https://ns.inria.fr/same/same.owl#>
-            SELECT ?URITarget
+            SELECT ?IRITarget
             FROM same:Q""" + str(iterator - 1) + """
             WHERE {
-              ?URITarget a same:Target
+              ?IRITarget a same:Target
             }
         """)
         resources = []
         try:
             json = sparql.query().convert()["results"]["bindings"]
-            resources = [j["URITarget"]["value"] for j in json]
+            resources = [j["IRITarget"]["value"] for j in json]
         except Exception as err:
             traceback.print_tb(err)
         return resources
@@ -879,17 +881,17 @@ class EndpointExploration(object):
                                                                   handle_non_ascii=self.NON_ASCII_CHARACTERS_HANDLING,
                                                                   # Replace it with @bind in older versions of
                                                                   # Corese
-                                                                  sparql_events="@binding kg:values",
+                                                                  sparql_annotations="@binding kg:values",
                                                                   dataset_options="same:valuesIsAvailable true"):
                     sparql.setQuery(query)
                     sparql.query()
 
                 # Bindings with FILTER
-                for query in Helper.non_ascii_characters_handling(function,  iterator=iterator,
+                for query in Helper.non_ascii_characters_handling(function, iterator=iterator,
                                                                   handle_non_ascii=self.NON_ASCII_CHARACTERS_HANDLING,
                                                                   # Replace it with @bind in older versions of
                                                                   # Corese
-                                                                  sparql_events="@binding kg:filter",
+                                                                  sparql_annotations="@binding kg:filter",
                                                                   dataset_options="same:valuesIsAvailable false"):
                     sparql.setQuery(query)
                     sparql.query()
@@ -904,12 +906,12 @@ class EndpointExploration(object):
         except Exception as err:
             traceback.print_tb(err)
 
-    def _generate_query_pattern_sameas(self, iterator: int, sparql_events: str = "", dataset_options: str = "",
-                                       target_options="FILTER(!REGEX(str(?URITarget), \"[^\\\\x00-\\\\x7F]\", \"i\"))"):
+    def _generate_query_pattern_sameas(self, iterator: int, sparql_annotations: str = "", dataset_options: str = "",
+                                       target_options="FILTER(!REGEX(str(?IRITarget), \"[^\\\\x00-\\\\x7F]\", \"i\"))"):
         """
         Generate the query used to retrieve owl:sameAs relationships (:label: S1).
         :param iterator: int, iteration of the algorithm.
-        :param sparql_events: String, SPARQL Events of the Corese engine
+        :param sparql_annotations: String, SPARQL Annotations of the Corese engine
         (https://ns.inria.fr/sparql-extension/event.html#event).
         :param dataset_options: String, Options on the available SPARQL endpoints.
         :param target_options: String, Options on the same:Target resources.
@@ -930,8 +932,8 @@ class EndpointExploration(object):
                       ?ngraph a rdfg:Graph, prov:Entity .
 
                       GRAPH ?ngraph {
-                        ?URITarget owl:sameAs ?URIy .
-                        ?URIy owl:sameAs ?URITarget
+                        ?IRITarget owl:sameAs ?URIy .
+                        ?URIy owl:sameAs ?IRITarget
                       }
 
                       ?execution a fno:Execution, prov:Activity ;
@@ -951,7 +953,7 @@ class EndpointExploration(object):
                       ?ngraph same:hasIteration %d
                     } WHERE {
                       GRAPH same:Q%s  {
-                        ?URITarget a same:Target
+                        ?IRITarget a same:Target
                         %s
                       }
                       GRAPH same:N {
@@ -962,15 +964,15 @@ class EndpointExploration(object):
                       }
                       # Small issue by using prefixes in Corese with clause SERVICE
                       SERVICE ?endpoint {
-                        { ?URITarget <http://www.w3.org/2002/07/owl#sameAs> ?y } 
+                        { ?IRITarget <http://www.w3.org/2002/07/owl#sameAs> ?y } 
                         UNION 
-                        { ?y <http://www.w3.org/2002/07/owl#sameAs> ?URITarget }
+                        { ?y <http://www.w3.org/2002/07/owl#sameAs> ?IRITarget }
                         FILTER(!isBlank(?y))
                       }
-                      BIND(URI(concat(str(?endpoint), '#', %s, 'S1')) as ?ngraph)
-                      BIND(URI(concat(str(?endpoint), '#', %s, 'S1', 'Execution')) as ?execution)
-                      # Data clearing some URI are represented as a String
-                      BIND(URI(?y) as ?URIy)
+                      BIND(IRI(concat(str(?endpoint), '#', %s, 'S1')) as ?ngraph)
+                      BIND(IRI(concat(str(?endpoint), '#', %s, 'S1', 'Execution')) as ?execution)
+                      # Data clearing some IRI are represented as a String
+                      BIND(IRI(?y) as ?IfRIy)
                       BIND(REPLACE(STR(?y), "(#|/)[^#/]*$", "$1") as ?nsy)
                       BIND(REPLACE(STR(?y), ".+://(.*?)/.*", "$1") as ?auty)
                       BIND(REPLACE(STR(?y), ".+://(.*)", "$1") as ?noschemey)
@@ -979,7 +981,7 @@ class EndpointExploration(object):
                       FILTER(!EXISTS { ?y a same:Target })
                       BIND(xsd:dateTime(NOW()) AS ?date)
                     }
-                """ % (sparql_events, str(iterator), str(iterator), iterator, iterator, str(iterator - 1),
+                """ % (sparql_annotations, str(iterator), str(iterator), iterator, iterator, str(iterator - 1),
                        target_options, dataset_options, str(iterator), str(iterator))
         return query
 
@@ -1024,9 +1026,9 @@ class EndpointExploration(object):
                   }
                   BIND(REPLACE(STR(?InvFunctProperty), "(#|/)[^#/]*$", "$1") as ?nsifp)
                   BIND(REPLACE(STR(?FunctProperty), "(#|/)[^#/]*$", "$1") as ?nsfp)
-                  # Correct URI stored as String
-                  BIND(URI(?InvFunctProperty) as ?URIInvFunctProperty)
-                  BIND(URI(?FunctProperty) as ?URIFunctProperty)
+                  # Correct IRI stored as String
+                  BIND(IRI(?InvFunctProperty) as ?URIInvFunctProperty)
+                  BIND(IRI(?FunctProperty) as ?URIFunctProperty)
                 }
             """)
             sparql.query()
@@ -1147,13 +1149,13 @@ class EndpointExploration(object):
         except Exception as err:
             traceback.print_tb(err)
 
-    def _generate_query_pattern_functionalproperties_links1(self, iterator: int = 1, sparql_events: str = "",
+    def _generate_query_pattern_functionalproperties_links1(self, iterator: int = 1, sparql_annotations: str = "",
                                                             dataset_options: str = "",
-                                                            target_options="FILTER(!REGEX(str(?URITarget), \"[^\\\\x00-\\\\x7F]\", \"i\"))"):
+                                                            target_options="FILTER(!REGEX(str(?IRITarget), \"[^\\\\x00-\\\\x7F]\", \"i\"))"):
         """
         Generates the query used to retrieve (inverse) functional properties patterns (:label: (I)FP1).
         :param iterator: int, iteration of the algorithm.
-        :param sparql_events: String, SPARQL Events of the Corese engine
+        :param sparql_annotations: String, SPARQL Annotations of the Corese engine
         (https://ns.inria.fr/sparql-extension/event.html#event).
         :param dataset_options: String, Options on the available SPARQL endpoints.
         :param target_options: String, Options on the same:Target resources.
@@ -1170,10 +1172,10 @@ class EndpointExploration(object):
                     %s
                     INSERT {
                       GRAPH same:InverseFunctionalProperty_%s {
-                        ?URITarget ?P1 ?InverseFunctionalObject .
+                        ?IRITarget ?P1 ?InverseFunctionalObject .
                       }
                       GRAPH same:FunctionalProperty_%s {
-                        ?FunctionalSubject ?P2 ?URITarget .
+                        ?FunctionalSubject ?P2 ?IRITarget .
                       }
                       same:InverseFunctionalProperty_%s same:hasIteration %d .
                       same:FunctionalProperty_%s same:hasIteration %d
@@ -1186,7 +1188,7 @@ class EndpointExploration(object):
                       }
     
                       GRAPH same:Q%s  {
-                        ?URITarget a same:Target
+                        ?IRITarget a same:Target
                         %s
                       }
                       GRAPH kg:default {
@@ -1200,7 +1202,7 @@ class EndpointExploration(object):
                         ?IFP rdf:type|same:votingType owl:InverseFunctionalProperty .
                         SERVICE ?endpoint {
                         # Search inverse functional relations inferred with a known owl:InverseFunctionalProperty property
-                          ?URITarget ?P1 ?InverseFunctionalObject
+                          ?IRITarget ?P1 ?InverseFunctionalObject
                         }
                         FILTER(?P1 = ?IFP)
                       }
@@ -1211,13 +1213,13 @@ class EndpointExploration(object):
                         ?FP rdf:type|same:votingType owl:FunctionalProperty
                         SERVICE ?endpoint {
                         # Search inverse functional relations inferred with a known owl:InverseFunctionalProperty property
-                          ?FunctionalSubject ?P2 ?URITarget
+                          ?FunctionalSubject ?P2 ?IRITarget
                         }
                         FILTER(?P2 = ?FP)
                       }
                       }
                     }
-                """ % (sparql_events, str(iterator), str(iterator), str(iterator), iterator, str(iterator), iterator,
+                """ % (sparql_annotations, str(iterator), str(iterator), str(iterator), iterator, str(iterator), iterator,
                        dataset_options, str(iterator - 1), target_options)
 
         return query
@@ -1228,7 +1230,7 @@ class EndpointExploration(object):
         Generates the queries to compute new same:Target resources and owl:sameAs relationships with (inverse)
         functional properties patterns (:label: (I)FP2).
         :param iterator: int, iteration of the algorithm.
-        :param sparql_events: String, SPARQL Events of the Corese engine
+        :param sparql_events: String, SPARQL Annotations of the Corese engine
         (https://ns.inria.fr/sparql-extension/event.html#event).
         :param dataset_options: String, Options on the available SPARQL endpoints.
         :param _: Unused parameter, it is here for compatibilities with other functions.
@@ -1306,7 +1308,7 @@ class EndpointExploration(object):
                     FILTER(!EXISTS { ?URITargetF2 a same:Target })
                     FILTER(!EXISTS { ?URITargetF2 a same:Rotten })
                   }
-                  BIND(URI(concat(str(?endpoint), '#', %s, 'IFP2')) as ?ngraph)
+                  BIND(IRI(concat(str(?endpoint), '#', %s, 'IFP2')) as ?ngraph)
                   BIND(REPLACE(STR(?URITargetI2), "(#|/)[^#/]*$", "$1") as ?nstargeti2)
                   BIND(REPLACE(STR(?URITargetI2), ".+://(.*?)/.*", "$1") as ?auttargeti2)
                   BIND(REPLACE(STR(?URITargetI2), ".+://(.*)", "$1") as ?noschemetargeti2)
@@ -1385,7 +1387,7 @@ class EndpointExploration(object):
                     FILTER(!EXISTS { ?URITargetF2 a same:Target })
                     FILTER(!EXISTS { ?URITargetF2 a same:Rotten })
                   }
-                  BIND(URI(concat(str(?endpoint), '#', %s)) as ?ngraph)
+                  BIND(IRI(concat(str(?endpoint), '#', %s)) as ?ngraph)
                   BIND(REPLACE(STR(?URITargetI2), "(#|/)[^#/]*$", "$1") as ?nstargeti2)
                   BIND(REPLACE(STR(?URITargetI2), ".+://(.*?)/.*", "$1") as ?auttargeti2)
                   BIND(REPLACE(STR(?URITargetI2), ".+://(.*)", "$1") as ?noschemetargeti2)
@@ -1431,25 +1433,25 @@ class ErrorDetection(object):
                   }
                 } WHERE {
                     GRAPH same:Q%s  {
-                      ?URITarget a same:Target ;
+                      ?IRITarget a same:Target ;
                       same:hasNamespace ?nstarget ;
                       same:hasAuthority ?auttarget ;
                       same:hasValueWithNoScheme ?noschemetarget
                     }
-                    ?x (owl:sameAs|^owl:sameAs)+ ?URITarget .
+                    ?x (owl:sameAs|^owl:sameAs)+ ?IRITarget .
                     ?x same:hasNamespace ?nsx .
                     ?x same:hasAuthority ?autx .
                     ?x same:hasValueWithNoScheme ?noschemex
                     FILTER(?noschemex != ?noschemetarget && ?autx = ?auttarget)
                     # Checks that it is an indirect relationship
-                    FILTER(!EXISTS { ?x owl:sameAs ?URITarget } )
+                    FILTER(!EXISTS { ?x owl:sameAs ?IRITarget } )
                     FILTER(!EXISTS { GRAPH ?g { ?x a same:Target }
                                    ?g same:hasIteration ?it
                                    FILTER(xsd:integer(?it) != xsd:integer(%s))
                                   })
                     
                     # Retrieve information related to Rotten links
-                    ?Rotten owl:sameAs ?URITarget ;
+                    ?Rotten owl:sameAs ?IRITarget ;
                     same:hasNamespace ?nsrotten ;
                     same:hasAuthority ?autrotten
                     # OPTIONAL if ?x in Q0
@@ -1549,7 +1551,7 @@ class ErrorDetection(object):
                     ?Rotten a same:Target
                   }
                   ?g1 same:hasIteration ?it1
-                  BIND(URI(CONCAT(STR(same:),"Q", str(?it1+1))) as ?g2)
+                  BIND(IRI(CONCAT(STR(same:),"Q", str(?it1+1))) as ?g2)
                   FILTER(!EXISTS {?x owl:sameAs ?y .
                                   ?y a ?yType
                                   FILTER(?yType != same:Rotten) })
