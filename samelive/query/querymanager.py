@@ -932,8 +932,8 @@ class EndpointExploration(object):
                       ?ngraph a rdfg:Graph, prov:Entity .
 
                       GRAPH ?ngraph {
-                        ?IRITarget owl:sameAs ?URIy .
-                        ?URIy owl:sameAs ?IRITarget
+                        ?IRITarget owl:sameAs ?IRIy .
+                        ?IRIy owl:sameAs ?IRITarget
                       }
 
                       ?execution a fno:Execution, prov:Activity ;
@@ -943,7 +943,7 @@ class EndpointExploration(object):
                       ?ngraph prov:wasGeneratedBy ?execution .
 
                       GRAPH same:Q%s {
-                        ?URIy a same:Target ;
+                        ?IRIy a same:Target ;
                         void:inDataset ?dataset ;
                         same:hasNamespace ?nsy ;
                         same:hasAuthority ?auty ;
@@ -972,7 +972,7 @@ class EndpointExploration(object):
                       BIND(IRI(concat(str(?endpoint), '#', %s, 'S1')) as ?ngraph)
                       BIND(IRI(concat(str(?endpoint), '#', %s, 'S1', 'Execution')) as ?execution)
                       # Data clearing some IRI are represented as a String
-                      BIND(IRI(?y) as ?IfRIy)
+                      BIND(IRI(?y) as ?IRIy)
                       BIND(REPLACE(STR(?y), "(#|/)[^#/]*$", "$1") as ?nsy)
                       BIND(REPLACE(STR(?y), ".+://(.*?)/.*", "$1") as ?auty)
                       BIND(REPLACE(STR(?y), ".+://(.*)", "$1") as ?noschemey)
