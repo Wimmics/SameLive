@@ -43,7 +43,7 @@ class Statistics(object):
                 PREFIX kg: <http://ns.inria.fr/corese/kgram/>
                 
                 INSERT {
-                  GAPH same:Statistics {
+                  GRAPH same:Statistics {
                     same:ActivityReport same:totalVotedAsInverseFunctionalProperties ?nbx
                   }
                 } WHERE {
@@ -63,7 +63,7 @@ class Statistics(object):
                 PREFIX kg: <http://ns.inria.fr/corese/kgram/>
                 
                 INSERT {
-                  GAPH same:Statistics {
+                  GRAPH same:Statistics {
                     same:ActivityReport same:totalVotedAsFunctionalProperties ?nbx
                   }
                 } WHERE {
@@ -94,7 +94,7 @@ class Statistics(object):
                 PREFIX kg: <http://ns.inria.fr/corese/kgram/>
 
                 INSERT {
-                  GAPH same:Statistics {
+                  GRAPH same:Statistics {
                     same:ActivityReport same:totalIncorrectFunctionalProperties ?nbx
                   }
                 } WHERE {
@@ -116,7 +116,7 @@ class Statistics(object):
                 PREFIX kg: <http://ns.inria.fr/corese/kgram/>
 
                 INSERT {
-                  GAPH same:Statistics {
+                  GRAPH same:Statistics {
                     same:ActivityReport same:totalIncorrectInverseFunctionalProperties ?nbx
                   }
                 } WHERE {
@@ -149,7 +149,7 @@ class Statistics(object):
                 PREFIX kg: <http://ns.inria.fr/corese/kgram/>
 
                 INSERT {
-                  GAPH same:Statistics {
+                  GRAPH same:Statistics {
                     same:ActivityReport same:totalNotDeferencedProperties ?nbx
                   }
                 } WHERE {
@@ -180,7 +180,7 @@ class Statistics(object):
                 PREFIX kg: <http://ns.inria.fr/corese/kgram/>
 
                 INSERT {
-                  GAPH same:Statistics {
+                  GRAPH same:Statistics {
                     same:ActivityReport same:totalNotLoadedRDFDocuments ?nbns
                   }
                 } WHERE {
@@ -193,6 +193,7 @@ class Statistics(object):
                       ?resource a ?type
                     }
                     FILTER(STRSTARTS(STR(?resource), ?ns))
+                  }
                 }
                 }
             """)
@@ -214,7 +215,7 @@ class Statistics(object):
                 PREFIX kg: <http://ns.inria.fr/corese/kgram/>
 
                 INSERT {
-                  GAPH same:Statistics {
+                  GRAPH same:Statistics {
                     same:ActivityReport same:totalLoadedRDFDocuments ?nbdoc
                   }
                 } WHERE {
@@ -224,6 +225,7 @@ class Statistics(object):
                       ?property same:hasNamespace ?ns
                     }
                     FILTER(STRSTARTS(STR(?property), ?ns))
+                  }
                 }
                   GRAPH same:Statistics {
                     same:ActivityReport same:totalNotLoadedRDFDocuments ?nbnotloaded

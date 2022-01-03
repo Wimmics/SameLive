@@ -21,6 +21,7 @@ if __name__ == '__main__':
     setup.populate_umakata()
     setup.populate_linkedwiki()
     setup.populate_datahub()
+    setup.cleanup_datasets()
 
     try:
         sparql = SPARQLWrapper(Config.master_endpoint)

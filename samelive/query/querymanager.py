@@ -10,8 +10,8 @@ from samelive.utils.helper import Helper
 
 import tqdm
 from rdflib import Graph, ConjunctiveGraph
-from SPARQLWrapper import SPARQLWrapper, JSON, N3, XML
-
+from SPARQLWrapper import SPARQLWrapper, JSON, N3, XML, SPARQLExceptions
+from urllib import request, error
 
 class Setup(object):
     def __init__(self):
@@ -571,13 +571,21 @@ class Setup(object):
         """)
         try:
             json = sparql.query().convert()["results"]["bindings"]
-            query_pattern = ["LOAD SILENT <" + j["nsp"]["value"] + "> INTO GRAPH kg:default" for j in json]
+            #query_pattern = ["LOAD SILENT <" + j["nsp"]["value"] + "> INTO GRAPH kg:default" for j in json]
             sparql.method = 'POST'
             sparql.setRequestMethod('postdirectly')
-            sparql.setQuery("""
-                %s
-            """ % ';\n'.join(query_pattern))
-            sparql.query()
+            for j in json:
+                sparql.setQuery("""
+                    LOAD SILENT <%s> INTO GRAPH kg:default;
+                """ % j["nsp"]["value"])
+                try:
+                    sparql.query()
+                except (error.HTTPError, SPARQLExceptions.EndPointInternalError):
+                    pass
+            #sparql.setQuery(
+            #    %s
+            # % ';\n'.join(query_pattern))
+            #sparql.query()
 
             sparql.setQuery("""
                 PREFIX same: <https://ns.inria.fr/same/same.owl#>
