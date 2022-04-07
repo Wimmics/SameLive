@@ -87,18 +87,18 @@ O<sub>1</sub> only includes resources of type same:Target, O<sub>2</sub> contain
 	</thead>  
 	<tbody>
 		<tr align="center">
-			<td align="left">Barack Obama</td> <td>260</td><td>260</td><td>0</td><td>120</td><td>240</td><td>19</td><td></td><td>109</td><td>117</td>
+			<td align="left">Barack Obama</td> <td>260</td><td>260</td><td>0</td><td>120</td><td>240</td><td>19</td><td></td><td>105</td><td>116</td>
 	       </tr>  
 		<tr align="center">
 			<td align="left">Other Real World Entity</td> <td>78</td><td>10</td><td>68</td><td><b>0</b></td><td>22</td><td><b>0</b></td><td></td><td><b>0</b></td><td><b>0</b></td>
 	       </tr>  
 		<tr align="center">
-			<td align="left">New URIs outside A<sub>1</sub></td> <td>0</td><td>0</td><td>0</td><td>0</td><td>413</td><td>14</td><td></td><td>152</td><td>195</td>
+			<td align="left">New URIs outside A<sub>1</sub></td> <td>0</td><td>0</td><td>0</td><td>0</td><td>413</td><td>14</td><td></td><td>27</td><td>67</td>
         <tr>
             <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
         </tr>
 		<tr align="center">
-			<td align="left"><b>Undetermined URIs</b></td> <td>102</td><td>92</td><td>10</td><td>1</td><td>32</td><td>4</td><td></td><td>8</td><td>11</td>
+			<td align="left"><b>Undetermined URIs</b></td> <td>102</td><td>92</td><td>10</td><td>1</td><td>32</td><td>9</td><td></td><td>11</td><td>11</td>
 	       </tr>  
 		<tr align="center" >
 			<td align="left"><b>Identity Sets</b></td> <td>1</td><td colspan="2">2</td><td>219</td><td>1</td><td>1</td><td></td><td>1</td><td>1</td>
@@ -107,7 +107,7 @@ O<sub>1</sub> only includes resources of type same:Target, O<sub>2</sub> contain
             <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
         </tr>
 		<tr align="center">
-		    <td align="left"><b>Total URIs in Identity Set</b></td> <td>440</td><td>362</td><td>78</td><td>121</td><td>707</td><td>37</td><td></td><td><b>269</b></td><td><b>323</b></td>
+		    <td align="left"><b>Total URIs in Identity Set</b></td> <td>440</td><td>362</td><td>78</td><td>121</td><td>707</td><td>37</td><td></td><td><b>141</b></td><td><b>194</b></td>
         </tr>  
     </tbody>  
 </table>

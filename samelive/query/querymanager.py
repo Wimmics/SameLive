@@ -16,6 +16,7 @@ from urllib import request, error
 class Setup(object):
     def __init__(self):
         self.master_endpoint = Config.master_endpoint
+        self.backup_lodcloud = Config.backup_lodcloud
 
     def populate(self, resources_list: list, endpoints_dict: dict = {}):
         """
@@ -124,9 +125,12 @@ class Setup(object):
         """
         try:
             headers = {'Accept': 'application/json'}
-            # backup solution, the website lod-cloud.net is currently down
-            response = requests.get("https://web.archive.org/web/20210814083458id_/https://lod-cloud.net/lod-data.json",
-                                    headers=headers)
+            # backup solution if the website lod-cloud.net is down
+            if self.backup_lodcloud is True:
+                response = requests.get("https://web.archive.org/web/20210814083458id_/https://lod-cloud.net/lod-data.json",
+                                        headers=headers)
+            else:
+                response = requests.get("https://lod-cloud.net/lod-data.json", headers=headers)
             lod_dump = json.loads(response.text)
             dataset_names = [name for name in lod_dump]
             data = []
@@ -1249,6 +1253,8 @@ class EndpointExploration(object):
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX void: <http://rdfs.org/ns/void#>
                 PREFIX ends: <http://labs.mondeca.com/vocab/endpointStatus#>
+                PREFIX prov: <http://www.w3.org/ns/prov#>
+                PREFIX fno: <https://w3id.org/function/ontology#>
                 PREFIX same: <https://ns.inria.fr/same/same.owl#>
                 %s
                 INSERT {
@@ -1437,7 +1443,8 @@ class ErrorDetection(object):
                     ?Rotten a same:Rotten ;
                     void:inDataset ?DatasetRotten ;
                     same:hasNamespace ?nsrotten ;
-                    same:hasAuthority ?autrotten
+                    same:hasAuthority ?autrotten ;
+                    same:hasValueWithNoScheme ?noschemerotten
                   }
                 } WHERE {
                     GRAPH same:Q%s  {
@@ -1456,12 +1463,14 @@ class ErrorDetection(object):
                     FILTER(!EXISTS { GRAPH ?g { ?x a same:Target }
                                    ?g same:hasIteration ?it
                                    FILTER(xsd:integer(?it) != xsd:integer(%s))
+                                   # FILTER(xsd:integer(?it) != xsd:integer(0))
                                   })
                     
                     # Retrieve information related to Rotten links
                     ?Rotten owl:sameAs ?IRITarget ;
                     same:hasNamespace ?nsrotten ;
-                    same:hasAuthority ?autrotten
+                    same:hasAuthority ?autrotten ;
+                    same:hasValueWithNoScheme ?noschemerotten
                     # OPTIONAL if ?x in Q0
                     OPTIONAL { ?Rotten void:inDataset ?DatasetRotten }
                 }
@@ -1494,7 +1503,8 @@ class ErrorDetection(object):
                     ?y a same:Rotten ;
                     void:inDataset ?DatasetY ;
                     same:hasNamespace ?nsy ;
-                    same:hasAuthority ?auty
+                    same:hasAuthority ?auty ;
+                    same:hasValueWithNoScheme ?noschemey
                   }
                 } WHERE {
                     ?x (owl:sameAs|^owl:sameAs)+ ?y .
@@ -1544,7 +1554,8 @@ class ErrorDetection(object):
                     ?x a same:Target ;
                     void:inDataset ?dataset ;
                     same:hasNamespace ?nsx ;
-                    same:hasAuthority ?autx
+                    same:hasAuthority ?autx ;
+                    same:hasValueWithNoScheme ?noschemex
                   }
                 } WHERE {
                   GRAPH same:Q-1  {
@@ -1552,7 +1563,8 @@ class ErrorDetection(object):
                   }
                   ?x (owl:sameAs|^owl:sameAs) ?Rotten .
                   ?x same:hasNamespace ?nsx .
-                  ?x same:hasAuthority ?autx
+                  ?x same:hasAuthority ?autx .
+                  ?x same:hasValueWithNoScheme ?noschemex
                   # OPTIONAL if ?x in Q0
                   OPTIONAL { ?x void:inDataset ?dataset }
                   GRAPH ?g1 {
@@ -1560,9 +1572,10 @@ class ErrorDetection(object):
                   }
                   ?g1 same:hasIteration ?it1
                   BIND(IRI(CONCAT(STR(same:),"Q", str(?it1+1))) as ?g2)
-                  FILTER(!EXISTS {?x owl:sameAs ?y .
-                                  ?y a ?yType
-                                  FILTER(?yType != same:Rotten) })
+                  # Searches if ?x is linked with another resource of type different from same:Rotten
+                  FILTER(EXISTS {?y owl:sameAs ?x .
+                                 ?y a ?yType
+                                 FILTER(?yType != same:Rotten) })
                 }
             """)
             sparql.query()
@@ -1580,14 +1593,16 @@ class ErrorDetection(object):
                     ?Rotten a same:Target ;
                     void:inDataset ?DatasetRotten ;
                     same:hasNamespace ?nsrotten ;
-                    same:hasAuthority ?autrotten
+                    same:hasAuthority ?autrotten ;
+                    same:hasValueWithNoScheme ?noschemerotten
                   }
                 } WHERE {
                   GRAPH same:Q-1  {
                     ?Rotten a same:Rotten ;
                     void:inDataset ?DatasetRotten ;
                     same:hasNamespace ?nsrotten ;
-                    same:hasAuthority ?autrotten
+                    same:hasAuthority ?autrotten ;
+                    same:hasValueWithNoScheme ?noschemerotten
                   }
                   GRAPH ?g1 {
                     ?Rotten a same:Target

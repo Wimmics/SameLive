@@ -9,6 +9,8 @@ class Config(object):
 
     # Enables optimizations of the Corese engine (bindings with the clause VALUES)
     IS_CORESE_ENGINE = True
+    # Sets to true to use the webarchive version of lod-cloud.net
+    backup_lodcloud = False
 
     # URL of the triplestore on which the UPDATE queries are performed.
     master_endpoint = "http://localhost:8082/sparql"

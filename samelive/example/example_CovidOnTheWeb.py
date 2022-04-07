@@ -55,7 +55,6 @@ if __name__ == '__main__':
         sparql.query()
     except Exception as err:
         traceback.print_tb(err)
-
     monitoring.endpoints_availability()
     # Optimizations with the Corese engine
     if Config.IS_CORESE_ENGINE:
